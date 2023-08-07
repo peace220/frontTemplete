@@ -5,12 +5,16 @@ import Link from "next/link";
 import "tippy.js/dist/tippy.css";
 import Meta from "../../components/Meta";
 import Image from "next/image";
-import { JoinGame, Guess, GetNumber, Withdraw,initWeb3 } from "../../components/numbergame/Gamefunction";
+import { JoinGame, Guess, GetNumber, Withdraw,initWeb3 ,SetAddress} from "../../components/numbergame/Gamefunction";
 
 const Item = () => {
 
   useEffect(() => {
-    initWeb3();
+    if(window.ethereum)
+    initWeb3(window.ethereum);
+    window.ethereum.on('accountsChanged', accounts => {
+      SetAddress(accounts[0]);
+    });
   }, []);
 
   const handleJoinGame = async () => {

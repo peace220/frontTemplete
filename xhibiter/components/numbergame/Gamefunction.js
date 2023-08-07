@@ -1,24 +1,39 @@
-import Web3 from 'web3';
+import { ethers } from 'ethers';
 import abi from '../../ABI.json';
 const CONTRACT_ADDRESS = "0x5cA45679bC423BacF198C217d3fa113F09862eDc"; // address of the contract
 
+
+let contract;
+let defaultAccount;
+
+export function SetAddress(address){
+    defaultAccount = address;
+}
+
 export const initWeb3 = async () => {
     if (window.ethereum) {
-        try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        web3 = new Web3(window.ethereum);
-        contract = new web3.eth.Contract(abi, CONTRACT_ADDRESS);
-        } catch (error) {
-        alert(error);
-        }
+        window.ethereum
+            .request({ method: 'eth_requestAccounts' })
+            .then(result => {
+                accountChangeHandler(result[0]);
+            })
+            .catch(error => {
+                console.error('Error connecting wallet:', error);
+            });
+            
+            const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
+            const tempSigner = tempProvider.getSigner();
+            contract = new ethers.Contract(CONTRACT_ADDRESS, abi, tempSigner);
+    } else {
+        console.error('MetaMask extension not found.');
     }
 };
 
 export async function JoinGame(entryBet){
     try{
-        const valueToSend = web3.utils.parseEther(entryBet); 
+        const valueToSend = ethers.utils.parseEther(entryBet); 
     
-        const tx = await contract.methods.joinGame().call({ value: valueToSend, gasLimit: 100000 });// send the ethers and gas to the smart contract
+        const tx = await contract.joinGame({ value: valueToSend, gasLimit: 100000 });// send the ethers and gas to the smart contract
         await tx.wait();
         
     } catch(error){
@@ -28,11 +43,11 @@ export async function JoinGame(entryBet){
 
 export async function Guess(betValue, playerGuess){
     try{
-        const valueToSend = web3.utils.parseEther(betValue); 
-        const guessing = await contract.methods
-        .makeGuess(playerGuess).call({ value: valueToSend, from: defaultAccount, gasLimit: 120000})
+        const valueToSend = ethers.utils.parseEther(betValue); 
+        const guessing = await contract
+        .makeGuess(playerGuess, { value: valueToSend, from: defaultAccount, gasLimit: 120000})
         await guessing.wait();
-        }catch(error){
+    }catch(error){
         alert(error);
         }
     
@@ -41,13 +56,12 @@ export async function Guess(betValue, playerGuess){
 export async function GetNumber(){
     if(defaultAccount === OWNER_ADDRESS){
         try{
-        const Number = await contract.methods.getTargetNumber()
-        .call({from: defaultAccount, gasLimit: 100000});
-        setTargetNumber(Number.toString());
-        setTimeout(() => setTargetNumber(""), 5000 );
+            const Number = await contract.getTargetNumber({from: defaultAccount, gasLimit: 100000});
+            setTargetNumber(Number.toString());
+            setTimeout(() => setTargetNumber(""), 5000 );
         }catch(error){
-        alert(error);
-    }
+            alert(error);
+        }
     }else{
         setShowErrorMessage(true);
         setTimeout(() => setShowErrorMessage(false), 5000);
@@ -56,9 +70,8 @@ export async function GetNumber(){
 }
 
 export async function Withdraw(){
-    
     try{
-        await contract.methods.withdraw().call({from:defaultAccount, gasLimit: 100000});
+        await contract.withdraw({from:defaultAccount, gasLimit: 100000});
     } catch(error){
         alert(error);
     }
