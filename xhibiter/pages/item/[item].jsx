@@ -48,7 +48,7 @@ const Item = () => {
       <section className="relative lg:mt-24 lg:pb-24 mt-24 pt-10 pb-24">
         <picture className="pointer-events-none absolute inset-0 -z-10 dark:hidden">
           <Image
-            width={1519}
+            width={1518}
             height={773}
             priority
             src="/images/gradient_light.jpg"
@@ -65,7 +65,7 @@ const Item = () => {
               return (
                 <div className="text-center mt-6">
                   <h1
-                  className="text-3xl font-semibold">Welcome to the Number Game</h1>
+                  className="text-3xl font-semibold mb-5 ">Welcome to the Number Game</h1>
                   <div className="md:flex md:flex-wrap" key={id}>
                   
                   {/* <!-- Image --> */}
